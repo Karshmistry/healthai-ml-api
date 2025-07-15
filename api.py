@@ -1,32 +1,44 @@
 from flask import Flask, request, jsonify
 import pickle
 import pandas as pd
-import os
 
-# Load model and symptom columns
+# Load model and encoders
 with open("disease_model.pkl", "rb") as f:
     model = pickle.load(f)
 
 with open("symptom_columns.pkl", "rb") as f:
     symptom_columns = pickle.load(f)
 
+with open("label_encoder.pkl", "rb") as f:
+    le = pickle.load(f)
+
 app = Flask(__name__)
 
+# ✅ Welcome Route for Browser
+@app.route("/", methods=["GET"])
+def home():
+    return "Welcome to HealthAI API. Use POST /predict with symptoms."
+
+# 🔍 Prediction Route
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
     symptoms = data.get("symptoms", [])
 
-    # Convert input symptoms to one-hot vector
-    input_vector = [1 if symptom in symptoms else 0 for symptom in symptom_columns]
+    row = ['none'] * 17
+    for i in range(min(17, len(symptoms))):
+        row[i] = symptoms[i]
 
-    # Predict
-    df = pd.DataFrame([input_vector], columns=symptom_columns)
+    df = pd.DataFrame([row], columns=[f"Symptom_{i+1}" for i in range(17)])
+
+    # Encode each symptom column using saved LabelEncoder
+    for col in df.columns:
+        df[col] = le.transform(df[col])
+
     prediction = model.predict(df)[0]
-
     return jsonify({"prediction": prediction})
 
-
 if __name__ == '__main__':
+    import os
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True, host="0.0.0.0", port=port)
