@@ -14,10 +14,10 @@ with open("label_encoder.pkl", "rb") as f:
 
 app = Flask(__name__)
 
-# ✅ Welcome Route for Browser
+# ✅ Welcome Route
 @app.route("/", methods=["GET"])
 def home():
-    return "Welcome to HealthAI API. Use POST /predict with symptoms."
+    return "✅ HealthAI Flask API is live! Use POST /predict to get prediction."
 
 # 🔍 Prediction Route
 @app.route("/predict", methods=["POST"])
