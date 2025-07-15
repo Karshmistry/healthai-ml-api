@@ -1,37 +1,37 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 import pickle
-from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
 
-# Load data
-data = pd.read_csv("Training.csv")
-data.columns = data.columns.str.strip()
+# Load training data
+df = pd.read_csv("Training.csv")
 
-# Get list of unique symptoms (columns except 'Disease')
-symptom_columns = data.columns.drop('Disease')
+# Prepare input features
+symptom_cols = [f"Symptom_{i+1}" for i in range(17)]
+X_raw = df[symptom_cols].fillna("none")
 
-# One-hot encode: convert symptom strings to 1 if present, else 0
-def encode_symptoms(row):
-    encoded = [0] * len(symptom_columns)
-    for i, col in enumerate(symptom_columns):
-        if row[col] != '0':
-            encoded[i] = 1
-    return encoded
+# Encode symptoms
+le = LabelEncoder()
+for col in X_raw.columns:
+    X_raw[col] = le.fit_transform(X_raw[col])
 
-X = data.apply(encode_symptoms, axis=1, result_type='expand')
-X.columns = symptom_columns
-y = data['Disease']
+# Labels (diseases)
+y = df["Disease"]
 
 # Train model
-x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 model = RandomForestClassifier()
-model.fit(x_train, y_train)
+model.fit(X_raw, y)
 
-# Save model and symptom columns
+# Save model
 with open("disease_model.pkl", "wb") as f:
     pickle.dump(model, f)
 
-with open("symptom_columns.pkl", "wb") as f:
-    pickle.dump(list(symptom_columns), f)
+# Save encoder
+with open("label_encoder.pkl", "wb") as f:
+    pickle.dump(le, f)
 
-print("✅ Model trained and saved!")
+# Save symptom column names
+with open("symptom_columns.pkl", "wb") as f:
+    pickle.dump(symptom_cols, f)
+
+print("✅ Model training complete. Files saved.")
