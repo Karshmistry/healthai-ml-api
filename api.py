@@ -23,18 +23,25 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = request.get_json()
-    symptoms = data.get("symptoms", [])
+    try:
+        data = request.get_json()
+        symptoms = data.get("symptoms", [])
 
-    input_data = pd.DataFrame([[1 if col in symptoms else 0 for col in symptom_columns]],
-                              columns=symptom_columns)
+        if not symptoms:
+            return jsonify({"error": "No symptoms provided"}), 400
 
-    prediction = model.predict(input_data)[0]
-    disease = le.inverse_transform([prediction])[0]
+        input_data = pd.DataFrame([[1 if col in symptoms else 0 for col in symptom_columns]],
+                                  columns=symptom_columns)
 
-    return jsonify({"prediction": disease})
+        prediction = model.predict(input_data)[0]
+        disease = le.inverse_transform([prediction])[0]
 
-# ✅ Correct indentation below:
+        return jsonify({"prediction": disease})
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ✅ Correct main block for Render:
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
