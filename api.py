@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pickle
 import pandas as pd
-import os
 
 # Load model and encoders
 with open("disease_model.pkl", "rb") as f:
@@ -15,7 +14,7 @@ with open("label_encoder.pkl", "rb") as f:
     le = pickle.load(f)
 
 app = Flask(__name__)
-CORS(app)  # ✅ Allow all origins (especially needed for Flutter Web)
+CORS(app, resources={r"/*": {"origins": "*"}})  # ✅ Enable CORS for all origins
 
 @app.route("/", methods=["GET"])
 def home():
@@ -34,7 +33,5 @@ def predict():
 
     return jsonify({"prediction": disease})
 
-# ✅ This part is CRITICAL for Render to detect the open port
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Render assigns PORT automatically
-    app.run(host="0.0.0.0", port=port, debug=True)  # Must use 0.0.0.0 to allow external access
+    app.run(debug=True)
