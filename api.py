@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pickle
 import pandas as pd
+
+app = Flask(__name__)
+CORS(app)
 
 # Load model and encoders
 with open("disease_model.pkl", "rb") as f:
