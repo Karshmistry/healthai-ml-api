@@ -3,9 +3,6 @@ from flask_cors import CORS
 import pickle
 import pandas as pd
 
-app = Flask(__name__)
-CORS(app)
-
 # Load model and encoders
 with open("disease_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -17,32 +14,24 @@ with open("label_encoder.pkl", "rb") as f:
     le = pickle.load(f)
 
 app = Flask(__name__)
+CORS(app)  # ✅ Allow all origins (especially needed for Flutter Web)
 
-# ✅ Welcome Route for Browser
 @app.route("/", methods=["GET"])
 def home():
-    return "Welcome to HealthAI API. Use POST /predict with symptoms."
+    return "✅ HealthAI Flask API is live! Use POST /predict to get prediction."
 
-# 🔍 Prediction Route
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
     symptoms = data.get("symptoms", [])
 
-    row = ['none'] * 17
-    for i in range(min(17, len(symptoms))):
-        row[i] = symptoms[i]
+    input_data = pd.DataFrame([[1 if col in symptoms else 0 for col in symptom_columns]],
+                              columns=symptom_columns)
 
-    df = pd.DataFrame([row], columns=[f"Symptom_{i+1}" for i in range(17)])
+    prediction = model.predict(input_data)[0]
+    disease = le.inverse_transform([prediction])[0]
 
-    # Encode each symptom column using saved LabelEncoder
-    for col in df.columns:
-        df[col] = le.transform(df[col])
+    return jsonify({"prediction": disease})
 
-    prediction = model.predict(df)[0]
-    return jsonify({"prediction": prediction})
-
-if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    app.run(debug=True)
