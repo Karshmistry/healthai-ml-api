@@ -15,7 +15,7 @@ with open("label_encoder.pkl", "rb") as f:
     le = pickle.load(f)
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # ✅ Enable CORS for all origins
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.route("/", methods=["GET"])
 def home():
@@ -34,7 +34,7 @@ def predict():
 
     return jsonify({"prediction": disease})
 
-    if __name__ == "__main__":
+# ✅ Correct indentation below:
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
