@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pickle
 import pandas as pd
+import os
 
 # Load model and encoders
 with open("disease_model.pkl", "rb") as f:
@@ -33,5 +34,7 @@ def predict():
 
     return jsonify({"prediction": disease})
 
+# ✅ This part is CRITICAL for Render to detect the open port
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Render assigns PORT automatically
+    app.run(host="0.0.0.0", port=port, debug=True)  # Must use 0.0.0.0 to allow external access
