@@ -3,35 +3,44 @@ import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 
-# Load training data
+# 1. Load training data
 df = pd.read_csv("Training.csv")
 
-# Prepare input features
+# 2. Prepare input features
 symptom_cols = [f"Symptom_{i+1}" for i in range(17)]
 X_raw = df[symptom_cols].fillna("none")
 
-# Encode symptoms
-le = LabelEncoder()
+# 3. Encode each symptom column using separate LabelEncoders
+symptom_encoders = {}
+X_encoded = pd.DataFrame()
+
 for col in X_raw.columns:
-    X_raw[col] = le.fit_transform(X_raw[col])
+    le = LabelEncoder()
+    X_encoded[col] = le.fit_transform(X_raw[col])
+    symptom_encoders[col] = le
 
-# Labels (diseases)
-y = df["Disease"]
+# 4. Encode labels (diseases)
+label_encoder = LabelEncoder()
+y_encoded = label_encoder.fit_transform(df["Disease"])
 
-# Train model
+# 5. Train model
 model = RandomForestClassifier()
-model.fit(X_raw, y)
+model.fit(X_encoded, y_encoded)
 
-# Save model
+# 6. Save model
 with open("disease_model.pkl", "wb") as f:
     pickle.dump(model, f)
 
-# Save encoder
+# 7. Save disease label encoder
 with open("label_encoder.pkl", "wb") as f:
-    pickle.dump(le, f)
+    pickle.dump(label_encoder, f)
 
-# Save symptom column names
+# 8. Save symptom encoders dictionary
+with open("symptom_encoders.pkl", "wb") as f:
+    pickle.dump(symptom_encoders, f)
+
+# 9. Save symptom column names
 with open("symptom_columns.pkl", "wb") as f:
     pickle.dump(symptom_cols, f)
 
-print("✅ Model training complete. Files saved.")
+print("✅ Model training complete. All .pkl files saved successfully.")
