@@ -8,7 +8,9 @@ symptom_encoder = pickle.load(open("symptom_encoder.pkl", "rb"))
 label_encoder = pickle.load(open("label_encoder.pkl", "rb"))
 
 app = Flask(__name__)
-CORS(app) 
+
+# ✅ Proper CORS configuration for Render
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -20,7 +22,7 @@ def predict():
 
     # Transform symptoms to one-hot vector using MultiLabelBinarizer
     input_vector = symptom_encoder.transform([symptoms])
-    print("Input vector:", input_vector)  # 👈 Add this line for debugging
+    print("Input vector:", input_vector)
 
     # Predict
     prediction_encoded = model.predict(input_vector)[0]

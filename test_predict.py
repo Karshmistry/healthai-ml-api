@@ -2,7 +2,7 @@ import requests
 
 url = "https://healthai-ml-api-1.onrender.com/predict"
 data = {
-    "symptoms": ["high_fever", "abdominal_pain", "diarrhoea"]
+    "symptoms": ["fever", "headache", "cough"]
 }
 
 response = requests.post(url, json=data)
