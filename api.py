@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS 
 import pickle
 
 # Load model and encoders
@@ -7,6 +8,7 @@ symptom_encoder = pickle.load(open("symptom_encoder.pkl", "rb"))
 label_encoder = pickle.load(open("label_encoder.pkl", "rb"))
 
 app = Flask(__name__)
+CORS(app) 
 
 @app.route("/predict", methods=["POST"])
 def predict():
